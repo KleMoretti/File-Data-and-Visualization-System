@@ -1,10 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}数据分析 – 数据分析系统{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">数据分析</h2>
+
+  <form method="post" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <label for="algorithm" class="form-label">选择算法</label>
+      <select name="algorithm" id="algorithm" class="form-select">
+        <option value="kmeans">K-Means 聚类</option>
+        <option value="regression">线性回归</option>
+      </select>
+    </div>
+
+    <!-- 公共：特征列多选 -->
+    <div class="col-md-8">
+      <label for="features" class="form-label">特征列（多选）</label>
+      <select name="features" id="features" class="form-select" multiple size="5">
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- KMeans 参数 -->
+    <div class="col-md-4" id="kmeans-params">
+      <label for="n_clusters" class="form-label">簇数量</label>
+      <input type="number" name="n_clusters" id="n_clusters" class="form-control" value="3" min="2">
+    </div>
+
+    <!-- Regression 参数 -->
+    <div class="col-md-4 d-none" id="regression-params">
+      <label for="target" class="form-label">目标列</label>
+      <select name="target" id="target" class="form-select">
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-12 text-end">
+      <button type="submit" class="btn btn-primary">运行</button>
+    </div>
+  </form>
+
+  {% if result %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title">分析结果</h3>
+        <pre>{{ result | tojson(indent=2, ensure_ascii=False) }}</pre>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 切换算法时显示/隐藏参数区
+  const algoSelect = document.getElementById('algorithm');
+  const kmParams  = document.getElementById('kmeans-params');
+  const lrParams  = document.getElementById('regression-params');
+
+  function toggleParams() {
+    if (algoSelect.value === 'kmeans') {
+      kmParams.classList.remove('d-none');
+      lrParams.classList.add('d-none');
+    } else {
+      kmParams.classList.add('d-none');
+      lrParams.classList.remove('d-none');
+    }
+  }
+  algoSelect.addEventListener('change', toggleParams);
+  toggleParams();
+</script>
+{% endblock %}
